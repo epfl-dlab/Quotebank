@@ -7,7 +7,10 @@ During this time, the client-side code used for collecting the data changed seve
 This document, although not entirely conclusive, is the result of an "archæological" endeavor to reconstruct the history of the various character encodings used at different times during Spinn3r data collection.
 Based on our insights, we divide the 12 years spanned by the Spinn3r corpus into five phases (Phases A through E), detailed below.
 Non-ASCII characters are most relevant for non-English text; capitalization, however, matters for English as well.
-For most users, the key takeaway of this document is that **text was lowercased in Phases A, B, and C,** whereas the **original capitalization was maintained in Phases D and E.**
+For most users, the key takeaways of this document are these:
+
+1. Text was lowercased in Phases A, B, and C, whereas the original capitalization was maintained in Phases D and E.
+2. Non-ASCII characters are properly represented only in Phase E.
 
 (This document is based on an initial write-up made on 6 June 2014.)
 
@@ -19,7 +22,7 @@ Then, **lowercasing** was performed on the garbled text, making it even more gar
 Finally, the data was written to disk as UTF-8.
 
 **Approximate solution:**
-Take the debugging table from http://www.i18nqa.com/debug/utf8-debug.html, look for the garbled and lower-cased sequences and replace them by their original character.
+Take the debugging table from [http://www.i18nqa.com/debug/utf8-debug.html](https://web.archive.org/web/20210228174408/http://www.i18nqa.com/debug/utf8-debug.html), look for the garbled and lower-cased sequences and replace them by their original character.
 Note that the garbling is not bijective, but since most of the garbled sequences are highly unlikely (e.g., "ã¤"), this should be mostly fine.
 
 
