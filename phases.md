@@ -1,6 +1,7 @@
 # Spinn3r character encoding: description of Phases A through E
 
-The Spinn3r from which Quotebank was extracted was collected over the course of over a decade.
+Quotebank was extracted from news articles that had been collected from the media aggregation service Spinn3r (now called [Datastreamer](https://www.datastreamer.io)).
+The Spinn3r data was collected over the course of over a decade.
 During this time, the client-side code used for collecting the data changed several times, and various character-encoding-related issues led to different representations of the original text at different times. Most issues relate to capital letters and non-ASCII characters.
 
 This document, although not entirely conclusive, is the result of an "archæological" endeavor to reconstruct the history of the various character encodings used at different times during Spinn3r data collection.
@@ -18,9 +19,8 @@ Then, **lowercasing** was performed on the garbled text, making it even more gar
 Finally, the data was written to disk as UTF-8.
 
 **Approximate solution:**
-Take the debugging table from [http://www.i18nqa.com/debug/utf8-debug.html], look for the garbled and lower-cased sequences and replace them by their original character.
-
-Note: The garbling is not bijective, but since most of the garbled sequences are highly unlikely (e.g., "ã¤"), this should be mostly fine.
+Take the debugging table from http://www.i18nqa.com/debug/utf8-debug.html, look for the garbled and lower-cased sequences and replace them by their original character.
+Note that the garbling is not bijective, but since most of the garbled sequences are highly unlikely (e.g., "ã¤"), this should be mostly fine.
 
 
 ## Phase B (2010-07-14 to 2010-07-26)
@@ -46,10 +46,10 @@ None. We simply need to byte (haha...) the bullet and deal with the question mar
 
 Attempt 1 at fixing the above legacy issues:
 capitalization is kept as in the original text obtained from Spinn3r.
-However, due to a bad BASH environment variable, data was written as ASCII, such that non-ASCII characters still appear as "?".
+However, due to a bad BASH environment variable, text was written to disk as ASCII, such that non-ASCII characters still appear as "?".
 
 
 ## Phase E (since 2014-05-22)
 
 Attempt 2 at fixing the above legacy issues:
-capitalization is kept as in the original text obtained from Spinn3r, and output is now written as proper UTF-8 Unicode.
+capitalization is kept as in the original text obtained from Spinn3r, and output is now finally written as proper UTF-8 Unicode.
