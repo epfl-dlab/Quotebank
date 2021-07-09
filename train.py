@@ -38,6 +38,12 @@ if __name__ == "__main__":
         help="The input training directory. Should contain (.gz.parquet) files",
     )
     parser.add_argument(
+        "--val_dir",
+        default=None,
+        type=str,
+        help="The input validation directory. Should contain (.gz.parquet) files",
+    )
+    parser.add_argument(
         "--tokenizer_name",
         default="",
         type=str,
@@ -227,8 +233,8 @@ if __name__ == "__main__":
 
         logger.info("Evaluate the following checkpoints: %s", checkpoints)
 
-        logger.info(f"Started loading the validation dataset from {args.train_dir}")
-        files = glob.glob(os.path.join(args.train_dir, "val_dataset/**.gz.parquet"))
+        logger.info(f"Started loading the validation dataset from {args.val_dir}")
+        files = glob.glob(os.path.join(args.val_dir, "**.gz.parquet"))
         validation_dataset = ConcatParquetDataset([ParquetDataset(f) for f in files])
         for checkpoint in checkpoints:
             # Reload the model

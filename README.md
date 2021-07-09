@@ -15,6 +15,7 @@ To run our code, you need:
 
 - For the data pre-/postpreccing: A Spark (>= 2.3) cluster running Yarn, Python 3.x and Java 8
 - For the training and inference: An instance w/ GPUs running on Python 3.7 with a venv described in `environment.yml`
+  - *Note*: In the next steps, we don't include the steps were the data needs to be moved between HDFS and a local machine. A rule of thumb is that everything related to the models happens locally and every processing step in HDFS.
 - To create the train data:
   - Your own dataset or the full Spinn3r dataset
   - Your own Wikidata people's dataset of the same format as our provided version in `data/wikidata_people_ALIVE_FILTERED-NAMES-CLEAN.tsv.gz` 
@@ -26,7 +27,7 @@ To run our code, you need:
 
 ### 1. Quotation and candidate extraction
 The first step consists in extracting all direct quotations, their context and the candidate speakers from the data. More details about Quootstrap can be found in the [README of Quootstrap](quootstrap/README.md).
-This can be generated with our variation Quootstrap by extracting the tar ball in `quootstrap` to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
+This can be generated with our variation Quootstrap by extracting the tarball in `quootstrap` to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
 
 ```bash
 EXPORT_RESULTS=true
@@ -52,7 +53,7 @@ This part is based on [`merge.py`](dataprocessing/preprocessing/merge.py), you c
 
 Run
 
-```shell
+```bash
 ./run.sh preprocessing/merge.py \
 	-q /hadoop/path/output_quotebank \
 	-c /hadoop/path/quotes_context \
@@ -65,7 +66,7 @@ This part is based on [`boostrap_EM.py`](quobert/dataprocessing/preprocessing/bo
 
 Run
 
-```shell
+```bash
 ./run.sh preprocessing/boostrap_EM.py \
 	-q /hadoop/path/output_quotebank \
 	-c /hadoop/path/quotes_context \
@@ -78,7 +79,7 @@ This part is based on [`extract_entities.py`](quobert/dataprocessing/preprocessi
 
 Run it for `merged` and `em_merged`
 
-```shell
+```bash
 ./run.sh preprocessing/extract_entities.py \
 	-m /hadoop/path/merged \
 	-s /hadoop/path/speakers \
@@ -98,7 +99,7 @@ As we presented in the paper, our data is extremly imbalanced. We propose a samp
 
 Example for the cased case: Run the 2-step process
 
-```shell
+```bash
 ./run.sh preprocessing/sampling.py \
 	--step generate \
 	--path /hadoop/path/
@@ -114,7 +115,7 @@ This part is based on [`features.py`](quobert/dataprocessing/preprocessing/featu
 
 Run:
 
-```shell
+```bash
 ./run.sh preprocessing/features.py \
 	-t /hadoop/path/transformed \
 	-o /hadoop/path/train_data
@@ -125,9 +126,80 @@ And you're done for the training set :clap:
 
 ### 3. Model Training
 
-### 4. Model Testing
+The training of Quobert models is done in [`train.py`](train.py), you can check the parameters to pass using `-h` option. We assume you have a TensorBoard server running (e.g. in another `tmux` or `screen`)
+
+You can for example run a training session using:
+```bash
+python train.py \
+    --model_name_or_path bert-base-cased \
+    --output_dir /path/to/model \
+    --train_dir /path/to/train_data \
+    --do_train
+```
+One could also evaluate the models on a validation set by setting `--do_eval` and `--eval_all_checkpoints` and passing a value to `--val_dir`
+
+### 4. Model Testing on annotated data
+
+To prepare the test data in `data/annotated_mturk`, repeat step *2.3* and *2.5* with this data.
+
+The evaluation of Quobert models on the annotated test set is done in [`test.py`](test.py), you can check the parameters to pass using `-h` option. We assume you have a TensorBoard server running (e.g. in another `tmux` or `screen`)
+
+You can for example run a training session using:
+```bash
+python test.py \
+    --model_dir /path/to/model \
+    --output_dir /path/to/results \
+    --test_dir /path/to/test_data
+```
 
 ### 5. Inference and Postprocessing
+
+#### 5.1 Preparing the inference data
+As for testing, the data needs to be prepared before being fed to the model for inference. In our case, we used the `quotes_context` directly as input to step *2.3*:
+```bash
+./run.sh preprocessing/extract_entities.py \
+    -m /hadoop/path/quotes_context \
+    -s /hadoop/path/speakers \
+    -o /hadoop/path/qc_transformed \
+    --kind test
+    --ftype json
+```
+
+Then proceed as in step *2.5*
+```bash
+./run.sh preprocessing/features.py \
+	-t /hadoop/path/qc_transformed \
+	-o /hadoop/path/inference_data
+    --kind test
+```
+
+#### 5.2 Inference
+The inference of data using Quobert models is done in [`inference.py`](inference.py), you can check the parameters to pass using `-h` option.
+
+You can for example run a inference session using:
+```bash
+python inference.py \
+    --model_dir /path/to/model \
+    --output_dir /path/to/results \
+    --inference_dir /path/to/inference_data
+```
+
+#### 5.3 (optional) Postprocessing the inference results
+We also provide a pipeline to output the results in a format like [those made available to you on Zenodo](https://doi.org/10.5281/zenodo.4277311). The scripts for this steps are located under [`dataprocessing/postprocessing`](quobert/dataprocessing/postprocessing). It's a 2-step process, were we first find all the offsets of the candidate speakers mentioned in each article and then join the articles, quotes with their context, inference results and augmented speakers set.
+```bash
+./run.sh postprocessing/speakers_offset.py \
+    -a /hadoop/path/articles \
+    -s /hadoop/path/speakers \
+    -o /hadoop/path/speakers_transformed
+
+./run.sh postprocessing/process_res.py \
+    -q /hadoop/path/quotes_context \
+    -a /hadoop/path/articles \
+    -s /hadoop/path/speakers_transformed \
+    -r /hadoop/path/results \
+    -o /hadoop/path/output
+```
+
 
 ## Cite us
 
