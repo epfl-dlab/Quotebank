@@ -18,16 +18,16 @@ To run our code, you need:
   - *Note*: In the next steps, we don't include the steps were the data needs to be moved between HDFS and a local machine. A rule of thumb is that everything related to the models happens locally and every processing step in HDFS.
 - To create the train data:
   - Your own dataset or the full Spinn3r dataset
-  - Your own Wikidata people's dataset of the same format as our provided version in `data/wikidata_people_ALIVE_FILTERED-NAMES-CLEAN.tsv.gz` 
+  - Your own Wikidata people's dataset of the same format as our provided version `wikidata_people_ALIVE_FILTERED-NAMES-CLEAN.tsv.gz` that you can find in the [latest Release](releases)
 - Additionally, to create the evaluation data:
-  - Our annotated data in `data/annotated_mturk`
+  - Our annotated data `annotated_mturk.json` in the [latest Release](releases) 
 - If you only want to run the inference step with our trained models:
-  - The weights based on `bert-base-cased`:
-  - The weights based on `bert-based-uncased`:
+  - The weights based on `bert-base-cased` of `quobert-base-cased` in the [latest Release](releases)
+  - The weights based on `bert-based-uncased` of `quobert-base-uncased` in the [latest Release](releases)
 
 ### 1. Quotation and candidate extraction
 The first step consists in extracting all direct quotations, their context and the candidate speakers from the data. More details about Quootstrap can be found in the [README of Quootstrap](quootstrap/README.md).
-This can be generated with our variation Quootstrap by extracting the tarball in `quootstrap` to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
+This can be generated with our variation Quootstrap by extracting the `quootstrap` tarball in the [latest Release](releases) to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
 
 ```bash
 EXPORT_RESULTS=true
@@ -122,8 +122,6 @@ Run:
     --kind train
 ```
 
-And you're done for the training set :clap:
-
 ### 3. Model Training
 
 The training of Quobert models is done in [`train.py`](train.py), you can check the parameters to pass using `-h` option. We assume you have a TensorBoard server running (e.g. in another `tmux` or `screen`)
@@ -140,7 +138,7 @@ One could also evaluate the models on a validation set by setting `--do_eval` an
 
 ### 4. Model Testing on annotated data
 
-To prepare the test data in `data/annotated_mturk`, repeat step *2.3* and *2.5* with this data.
+To prepare the test data in `annotated_mturk.json`, repeat step *2.3* and *2.5* with this data. In step 2.3, additionally pass `--ftype json` as the test data is in json.
 
 The evaluation of Quobert models on the annotated test set is done in [`test.py`](test.py), you can check the parameters to pass using `-h` option. We assume you have a TensorBoard server running (e.g. in another `tmux` or `screen`)
 
