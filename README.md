@@ -18,16 +18,16 @@ To run our code, you need:
   - *Note*: In the next steps, we don't include the steps were the data needs to be moved between HDFS and a local machine. A rule of thumb is that everything related to the models happens locally and every processing step in HDFS.
 - To create the train data:
   - Your own dataset or the full Spinn3r dataset
-  - Your own Wikidata people's dataset of the same format as our provided version `wikidata_people_ALIVE_FILTERED-NAMES-CLEAN.tsv.gz` that you can find in the [latest Release](releases)
+  - Your own Wikidata people's dataset of the same format as our provided version `wikidata_people_ALIVE_FILTERED-NAMES-CLEAN.tsv.gz` that you can find in the [latest Release](https://github.com/epfl-dlab/Quotebank/releases/)
 - Additionally, to create the evaluation data:
-  - Our annotated data `annotated_mturk.json` in the [latest Release](releases) 
+  - Our annotated data `annotated_mturk.json` in the [latest Release](https://github.com/epfl-dlab/Quotebank/releases/) 
 - If you only want to run the inference step with our trained models:
-  - The weights based on `bert-base-cased` of `quobert-base-cased` in the [latest Release](releases)
-  - The weights based on `bert-based-uncased` of `quobert-base-uncased` in the [latest Release](releases)
+  - The weights based on `bert-base-cased` of `quobert-base-cased` in the [latest Release](https://github.com/epfl-dlab/Quotebank/releases/)
+  - The weights based on `bert-based-uncased` of `quobert-base-uncased` in the [latest Release](https://github.com/epfl-dlab/Quotebank/releases/)
 
 ### 1. Quotation and candidate extraction
 The first step consists in extracting all direct quotations, their context and the candidate speakers from the data. More details about Quootstrap can be found in the [README of Quootstrap](quootstrap/README.md).
-This can be generated with our variation Quootstrap by extracting the `quootstrap` tarball in the [latest Release](releases) to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
+This can be generated with our variation Quootstrap by extracting the `quootstrap` tarball in the [latest Release](https://github.com/epfl-dlab/Quotebank/releases/) to get the required JARs and running the command `./extraction_quotations.sh` in your Spark cluster. It is important to verify the parameters in the `config.properties` file, i.e. you need to change `/path/to/` to suit your needs. Additionally, we want those parameters to be set to `True`:
 
 ```bash
 EXPORT_RESULTS=true
